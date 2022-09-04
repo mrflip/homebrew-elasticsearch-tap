@@ -1,9 +1,10 @@
+VERSION="8.3.2"
 class KibanaFull < Formula
   desc "Analytics and search dashboard for Elasticsearch"
   homepage "https://www.elastic.co/products/kibana"
-  url "https://artifacts.elastic.co/downloads/kibana/kibana-7.17.4-darwin-x86_64.tar.gz?tap=elastic/homebrew-tap"
-  version "7.17.4"
-  sha256 "ac2b5a639ad83431db25e4161f811111d45db052eb845091e18f847016a34a55"
+  url "https://artifacts.elastic.co/downloads/kibana/kibana-#{VERSION}-darwin-x86_64.tar.gz?tap=elastic/homebrew-tap"
+  version VERSION
+  sha256 "be25dd4095ac8f349a2cf290ad6aa7c3e05334e68edce3f47cf6cab44c507a40"
   conflicts_with "kibana"
 
   def install
@@ -23,11 +24,20 @@ class KibanaFull < Formula
       next if f.directory?
       bin.install libexec/"bin"/f
     end
-    bin.env_script_all_files(libexec/"bin", { "KIBANA_PATH_CONF" => etc/"kibana", "DATA_PATH" => var/"lib/kibana/data" })
+    bin.env_script_all_files(
+      libexec/"bin",
+      {
+        "KIBANA_PATH_CONF" => etc/"kibana",
+        "KBN_PATH_CONF"    => etc/"kibana",
+        "DATA_PATH"        => var/"lib/kibana/data",
+        "LOG_PATH"         => var/"lib/kibana/log",
+      },
+    )
 
     cd libexec do
       packaged_config = IO.read "config/kibana.yml"
-      IO.write "config/kibana.yml", "path.data: #{var}/lib/kibana/data\n" + packaged_config
+      actual_config = packaged_config + "\npath.data: #{var}/lib/kibana/data\n" + "\npath.log: #{var}/lib/kibana/log\n"
+      IO.write("config/kibana.yml", actual_config)
       (etc/"kibana").install Dir["config/*"]
       rm_rf "config"
       rm_rf "data"
@@ -36,6 +46,7 @@ class KibanaFull < Formula
 
   def post_install
     (var/"lib/kibana/data").mkpath
+    (var/"lib/kibana/log").mkpath
     (prefix/"plugins").mkdir
   end
 
