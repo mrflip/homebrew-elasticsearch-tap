@@ -30,13 +30,23 @@ class KibanaFull < Formula
         "KIBANA_PATH_CONF" => etc/"kibana",
         "KBN_PATH_CONF"    => etc/"kibana",
         "DATA_PATH"        => var/"lib/kibana/data",
-        "LOG_PATH"         => var/"lib/kibana/log",
+        "LOG_PATH"         => var/"llog/kibana/log",
       },
     )
 
     cd libexec do
       packaged_config = IO.read "config/kibana.yml"
-      actual_config = packaged_config + "\npath.data: #{var}/lib/kibana/data\n" + "\npath.log: #{var}/lib/kibana/log\n"
+      actual_config = packaged_config + "\npath.data: #{var}/lib/kibana/data\n"
+      actual_config.gsub!(
+        /# Enables you to specify a file where Kibana stores log output/,
+        <<~EOS
+        # Enables you to specify a file where Kibana stores log output
+        logging.appenders.default:
+          type:          file
+          fileName:      /usr/local/var/log/kibana/kibana.log
+          layout:        { type: json }
+        EOS
+      )
       IO.write("config/kibana.yml", actual_config)
       (etc/"kibana").install Dir["config/*"]
       rm_rf "config"
@@ -79,6 +89,6 @@ class KibanaFull < Formula
 
   test do
     ENV["BABEL_CACHE_PATH"] = testpath/".babelcache.json"
-    assert_match /#{version}/, shell_output("#{bin}/kibana -V")
+    assert_match(/#{version}/, shell_output("#{bin}/kibana -V"))
   end
 end
