@@ -26,6 +26,17 @@ class ElasticsearchFull < Formula
       # 2. Configure paths
       s.sub!(%r{#\s*path\.data: /path/to.+$}, "path.data: #{var}/lib/elasticsearch/")
       s.sub!(%r{#\s*path\.logs: /path/to.+$}, "path.logs: #{var}/log/elasticsearch/")
+
+      also = <<~EOS
+
+      xpack.security.enabled: false
+
+      cluster.routing.allocation.disk.watermark.low: 1.4GB
+      cluster.routing.allocation.disk.watermark.high: 1.1GB
+      cluster.routing.allocation.disk.watermark.flood_stage: 1GB
+      EOS
+
+      s.concat(/$/, also)
     end
 
     inreplace "#{libexec}/config/jvm.options", %r{logs/gc.log}, "#{var}/log/elasticsearch/gc.log"
