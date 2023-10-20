@@ -28,15 +28,19 @@ class ElasticsearchFull < Formula
       s.sub!(%r{#\s*path\.logs: /path/to.+$}, "path.logs: #{var}/log/elasticsearch/")
 
       also = <<~EOS
+      #
 
       xpack.security.enabled: false
 
       cluster.routing.allocation.disk.watermark.low: 1.4GB
       cluster.routing.allocation.disk.watermark.high: 1.1GB
       cluster.routing.allocation.disk.watermark.flood_stage: 1GB
+
+      # KILROY WUZ HERE (via mrflip/homebrew-elasticsearch-tap)
+
       EOS
 
-      s.concat(/$/, also)
+      s.sub!(/$/, also)
     end
 
     inreplace "#{libexec}/config/jvm.options", %r{logs/gc.log}, "#{var}/log/elasticsearch/gc.log"
@@ -77,12 +81,12 @@ class ElasticsearchFull < Formula
   end
 
   service do
-    run [opt_bin/"elasticsearch"]
-    working_dir HOMEBREW_PREFIX
-    log_path var/"log/elasticsearch.log"
-    error_log_path var/"log/elasticsearch.log"
-  end
-  
+   run              [opt_bin/"elasticsearch"]
+   working_dir      HOMEBREW_PREFIX
+   log_path         var/"log/elasticsearch.log"
+   error_log_path   var/"log/elasticsearch.log"
+ end
+
   test do
     require "socket"
 
@@ -91,7 +95,7 @@ class ElasticsearchFull < Formula
     server.close
 
     mkdir testpath/"config"
-    cp etc/"elasticsearch/jvm.options", testpath/"config"
+    cp etc/"elasticsearch/jvm.options",       testpath/"config"
     cp etc/"elasticsearch/log4j2.properties", testpath/"config"
     touch testpath/"config/elasticsearch.yml"
 
