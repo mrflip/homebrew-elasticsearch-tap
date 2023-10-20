@@ -10,6 +10,10 @@ class ElasticsearchFull < Formula
     "elasticsearch_#{ENV["USER"]}"
   end
 
+  def brewtap_version
+    "mrflip/homebrew-elasticsearch-tap 20231020"
+  end
+
   def install
     # Install everything else into package directory
     libexec.install "bin", "config", "jdk.app", "lib", "modules"
@@ -36,7 +40,7 @@ class ElasticsearchFull < Formula
       cluster.routing.allocation.disk.watermark.high: 1.1GB
       cluster.routing.allocation.disk.watermark.flood_stage: 1GB
 
-      # KILROY WUZ HERE (via mrflip/homebrew-elasticsearch-tap)
+      # KILROY WUZ HERE (via #{brewtap_version})
 
       EOS
 
@@ -75,6 +79,8 @@ class ElasticsearchFull < Formula
       Logs:    #{var}/log/elasticsearch/#{cluster_name}.log
       Plugins: #{var}/elasticsearch/plugins/
       Config:  #{etc}/elasticsearch/
+      Mantra:  No need to hurry, no need to sparkle, no need to be anybody but one's self
+      Brewtap: #{brewtap_version}
     EOS
 
     s
